@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Approve Jadwal - Jadwal Shift Karyawan</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
+</head>
+<body>
+    <nav class="site-nav">
+        <button class="sidebar-toggle">
+          <span class="material-symbols-rounded">menu</span>
+        </button>
+    </nav>
+    
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar collapsed">
+          <!-- Sidebar header -->
+          <div class="sidebar-header">
+            <img src="assets/Rumah_Sakit_Urip_Sumoharjo.jpg" alt="RS Urip Sumoharjo" class="header-logo" />
+            <button class="sidebar-toggle">
+              <span class="material-symbols-rounded">chevron_left</span>
+            </button>
+          </div>
+          
+          <div class="sidebar-content">
+            <!-- Sidebar Menu -->
+            <ul class="menu-list">
+              <li class="menu-item">
+                <a href="index.html" class="menu-link">
+                  <span class="material-symbols-rounded">dashboard</span>
+                  <span class="menu-label">Jadwal Pegawai</span>
+                </a>
+              </li>
+              <li class="menu-item">
+                <a href="approve.html" class="menu-link active">
+                  <span class="material-symbols-rounded">task_alt</span>
+                  <span class="menu-label">Approve Jadwal</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+          
+          <!-- Sidebar Footer -->
+          <div class="sidebar-footer">
+            <button id="logoutBtn" class="logout-button">
+                <span class="material-symbols-rounded">logout</span>
+                <span>Logout</span>
+            </button>
+          </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top bar -->
+            <div class="top-bar-title">
+                <h1>Approve Jadwal Shift</h1>
+                <p>Kelola Persetujuan Jadwal Shift Karyawan</p>
+            </div>
+
+            <!-- Wrap all scrollable content -->
+            <div class="content-wrapper">
+                <!-- Filter Card -->
+                <div class="filter-card">
+                    <h2>Filter Approval</h2>
+                    
+                    <div class="filter-grid">
+                        <!-- Bulan -->
+                        <div class="filter-group">
+                            <label for="filterApprovalBulan">Bulan</label>
+                            <select id="filterApprovalBulan">
+                                <option value="">Semua Bulan</option>
+                            </select>
+                        </div>
+
+                        <!-- Tahun -->
+                        <div class="filter-group">
+                            <label for="filterApprovalTahun">Tahun</label>
+                            <select id="filterApprovalTahun">
+                                <option value="">Semua Tahun</option>
+                            </select>
+                        </div>
+
+                        <!-- Status -->
+                        <div class="filter-group">
+                            <label for="filterApprovalStatus">Status</label>
+                            <select id="filterApprovalStatus">
+                                <option value="">Semua Status</option>
+                                <option value="Pending">Pending</option>
+                                <option value="Approved">Approved</option>
+                            </select>
+                        </div>
+
+                        <!-- Search -->
+                        <div class="filter-group">
+                            <label for="filterApprovalSearch">Cari Departemen</label>
+                            <input type="text" id="filterApprovalSearch" placeholder="Cari departemen...">
+                        </div>
+                    </div>
+
+                    <!-- Button Group -->
+                    <div class="button-group">
+                        <button class="btn btn-primary" id="btnApprovalFilter">
+                            ✓ Tampilkan Data
+                        </button>
+                        <button class="btn btn-secondary" id="btnApprovalRefresh">
+                            🔄 Refresh
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Table Card -->
+                <div class="table-card">
+                    <div id="approvalTableContainer">
+                        <div class="no-data">Memuat data...</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Approval Action Modal -->
+    <div id="approvalActionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>✓ Approve Jadwal</h2>
+                <div class="modal-info">
+                    <p><strong>Departemen:</strong> <span id="actionDepartemen"></span></p>
+                    <p><strong>Bulan:</strong> <span id="actionBulan"></span> <span id="actionTahun"></span></p>
+                </div>
+            </div>
+
+            <div class="modal-body">
+                <div class="approval-item">
+                    <label for="roleSelect" style="display: block; margin-bottom: 10px; font-weight: 600;">
+                        Pilih Role Anda:
+                    </label>
+                    <select id="roleSelect" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--color-border-hr);">
+                        <option value="">-- Pilih Role --</option>
+                        <option value="Kepala_Ruangan">Kepala Ruangan</option>
+                        <option value="Kabag">Kepala Bagian</option>
+                        <option value="HRD">Kepala HRD</option>
+                    </select>
+                </div>
+
+                <div class="approval-item" style="margin-top: 15px;">
+                    <a href="#" id="viewPDFLink" target="_blank" class="btn btn-secondary" style="width: 100%; text-decoration: none; text-align: center;">
+                        📄 Lihat PDF
+                    </a>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="btnApprovalCancel">Batal</button>
+                <button class="btn btn-primary" id="btnApprovalSubmit">Approve ✓</button>
+            </div>
+
+            <button class="btn btn-secondary" id="btnApprovalClose" style="position: absolute; top: 1rem; right: 1rem; padding: 0.5rem 1rem;">✕</button>
+        </div>
+    </div>
+
+
+    <div id="logoutModal" class="logout-modal">
+        <div class="logout-modal-content">
+          <h3>Konfirmasi Logout</h3>
+          <p>Apakah Anda yakin ingin keluar?</p>
+      
+          <div class="logout-actions">
+            <button id="cancelLogout" class="btn-cancel">Batal</button>
+            <button id="confirmLogout" class="btn-logout">Keluar</button>
+          </div>
+        </div>
+    </div> 
+
+    <!-- Loading Overlay -->
+    <div id="loader" class="loader">
+        <div class="spinner"></div>
+        <p>Memuat data...</p>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
+    <!-- App Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/dataService.js"></script>
+    <script src="js/approvalService.js"></script>
+    <script src="js/pdfGenerator.js"></script>
+    <script src="js/approvalController.js"></script>
+    <script src="js/sidebarToggle.js"></script>
+</body>
+</html>

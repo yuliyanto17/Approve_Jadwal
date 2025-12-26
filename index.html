@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jadwal Shift Karyawan</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
+</head>
+<body>
+    <nav class="site-nav">
+        <button class="sidebar-toggle">
+          <span class="material-symbols-rounded">menu</span>
+        </button>
+    </nav>
+    
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar collapsed">
+          <!-- Sidebar header -->
+          <div class="sidebar-header">
+            <img src="assets/Rumah_Sakit_Urip_Sumoharjo.jpg" alt="RS Urip Sumoharjo" class="header-logo" />
+            <button class="sidebar-toggle">
+              <span class="material-symbols-rounded">chevron_left</span>
+            </button>
+          </div>
+          
+          <div class="sidebar-content">
+            <!-- Sidebar Menu -->
+            <ul class="menu-list">
+              <li class="menu-item">
+                <a href="index.html" class="menu-link active">
+                  <span class="material-symbols-rounded">dashboard</span>
+                  <span class="menu-label">Jadwal Pegawai</span>
+                </a>
+              </li>
+              <li class="menu-item">
+                <a href="approve.html" class="menu-link">
+                  <span class="material-symbols-rounded">task_alt</span>
+                  <span class="menu-label">Approve Jadwal</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+          
+          <!-- Sidebar Footer -->
+          <div class="sidebar-footer">
+            <button id="logoutBtn" class="logout-button">
+                <span class="material-symbols-rounded">logout</span>
+                <span>Logout</span>
+            </button>
+          </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top bar with toggle button and title -->
+                <div class="top-bar-title">
+                    <h1>Jadwal Shift Karyawan</h1>
+                    <p>Sistem Manajemen Jadwal Shift Rumah Sakit</p>
+                </div>
+
+            <!-- Wrap all scrollable content in content-wrapper -->
+            <div class="content-wrapper">
+                <!-- Filter Card -->
+                <div class="filter-card">
+                    <h2>Filter Data</h2>
+                    
+                    <div class="filter-grid">
+                        <!-- Ruangan -->
+                        <div class="filter-group">
+                            <label for="filterRuangan">Ruangan</label>
+                            <select id="filterRuangan">
+                                <option value="">Semua Ruangan</option>
+                            </select>
+                        </div>
+
+                        <!-- Bulan -->
+                        <div class="filter-group">
+                            <label for="filterBulan">Bulan</label>
+                            <select id="filterBulan">
+                                <option value="">Semua Bulan</option>
+                            </select>
+                        </div>
+
+                        <!-- Nama Pegawai -->
+                        <div class="filter-group">
+                            <label for="filterNama">Nama Pegawai</label>
+                            <input type="text" id="filterNama" placeholder="Cari nama pegawai...">
+                        </div>
+
+                        <!-- Range Tanggal -->
+                        <div class="filter-group">
+                            <label>Range Tanggal</label>
+                            <div class="date-range">
+                                <input type="number" id="filterTglDari" min="1" max="31" value="1">
+                                <span>s/d</span>
+                                <input type="number" id="filterTglSampai" min="1" max="31" value="31">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Button Group -->
+                    <div class="button-group">
+                        <button class="btn btn-primary" id="btnFilter">
+                            ✓ Tampilkan Data
+                        </button>
+                        <button class="btn btn-secondary" id="btnPrint">
+                            📄 Cetak PDF
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Table Card -->
+                <div class="table-card">
+                    <div class="table-scroll">
+                        <div id="tableContainer">
+                            <div class="no-data">Memuat data...</div>
+                        </div>
+                    </div>
+                </div>                
+            </div>
+        </main>
+    </div>
+
+    <!-- Approval Modal -->
+    <div id="approvalModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>✓ Konfirmasi Persetujuan</h2>
+                <div class="modal-info">
+                    <p><strong>Ruangan:</strong> <span id="modalRuangan"></span></p>
+                    <p><strong>Bulan:</strong> <span id="modalBulan"></span></p>
+                </div>
+            </div>
+
+            <div class="modal-body">
+                <!-- Kepala Ruangan -->
+                <div class="approval-item">
+                    <div class="approval-header">
+                        <input type="checkbox" id="check_kepalaRuangan">
+                        <label for="check_kepalaRuangan">Kepala Ruangan</label>
+                    </div>
+                    <div class="approval-nama">
+                        Nama: <strong id="nama_kepalaRuangan"></strong>
+                    </div>
+                    <div id="ttd_kepalaRuangan">
+                        <div class="signature-placeholder">TTD belum tersedia</div>
+                    </div>
+                </div>
+
+                <!-- Kabag Keperawatan -->
+                <div class="approval-item">
+                    <div class="approval-header">
+                        <input type="checkbox" id="check_kabagKeperawatan">
+                        <label for="check_kabagKeperawatan">Kepala Bagian</label>
+                    </div>
+                    <div class="approval-nama">
+                        Nama: <strong id="nama_kabagKeperawatan"></strong>
+                    </div>
+                    <div id="ttd_kabagKeperawatan">
+                        <div class="signature-placeholder">TTD belum tersedia</div>
+                    </div>
+                </div>
+
+                <!-- Kepala HRD -->
+                <div class="approval-item">
+                    <div class="approval-header">
+                        <input type="checkbox" id="check_kepalaHRD">
+                        <label for="check_kepalaHRD">Kepala HRD</label>
+                    </div>
+                    <div class="approval-nama">
+                        Nama: <strong id="nama_kepalaHRD"></strong>
+                    </div>
+                    <div id="ttd_kepalaHRD">
+                        <div class="signature-placeholder">TTD belum tersedia</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="btnModalCancel">Batal</button>
+                <button class="btn btn-primary" id="btnModalGenerate">Generate PDF</button>
+            </div>
+
+            <button class="btn btn-secondary" id="btnModalClose" style="position: absolute; top: 1rem; right: 1rem; padding: 0.5rem 1rem;">✕</button>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loader" class="loader">
+        <div class="spinner"></div>
+        <p>Memuat data...</p>
+    </div>
+
+    <div id="logoutModal" class="logout-modal">
+        <div class="logout-modal-content">
+          <h3>Konfirmasi Logout</h3>
+          <p>Apakah Anda yakin ingin keluar?</p>
+      
+          <div class="logout-actions">
+            <button id="cancelLogout" class="btn-cancel">Batal</button>
+            <button id="confirmLogout" class="btn-logout">Keluar</button>
+          </div>
+        </div>
+    </div>      
+
+    <!-- jsPDF Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
+    <!-- App Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/dataService.js"></script>
+    <script src="js/uiController.js"></script>
+    <script src="js/approvalService.js"></script>
+    <script src="js/modal.js"></script>
+    <script src="js/pdfGenerator.js"></script>
+    <script src="js/sidebarToggle.js"></script>
+
+</body>
+</html>
