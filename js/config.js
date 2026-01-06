@@ -1,5 +1,9 @@
 // Configuration file untuk Jadwal Shift Application
 window.CONFIG = {
+    API: {
+        SHIFT_DURATION: "https://script.google.com/macros/s/AKfycbxH7mYTWSsQTWZ83UTd81euAnPPvYr_7A7nbOafARtb6Royo7sqinD7C6KNlKZ2btc_/exec?action=getMasterShift"
+      },
+
     // URL Spreadsheet
     SPREADSHEET: {
         JADWAL_SHIFT: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSsZz2DI2v5lrF3r02BDJFduAa2PbMqVa4Rb_-vCfacrzyYXcvxZZGidO0lM8pVicL_vgjgh2aw7dg2/pub?gid=1638275873&single=true&output=csv',

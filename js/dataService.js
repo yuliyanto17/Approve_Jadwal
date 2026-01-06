@@ -3,7 +3,8 @@ window.DataService = {
     // Cache untuk data
     cache: {
         jadwalShift: null,
-        kabagMapping: null
+        kabagMapping: null,
+        shiftDuration: null
     },
 
     /**
@@ -20,7 +21,40 @@ window.DataService = {
             throw new Error('Gagal mengambil data dari spreadsheet');
         }
     },
+
+
+    async fetchJSON(url) {
+        try {
+            const response = await fetch(url, { mode: 'cors' });
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            return await response.json();
+        } catch (error) {
+            console.error('Error fetching JSON:', error);
+            throw new Error('Gagal mengambil data API');
+        }
+    },
+
+    async loadShiftDuration() {
+        if (this.cache.shiftDuration) {
+            return this.cache.shiftDuration;
+        }
     
+        try {
+            const json = await this.fetchJSON(CONFIG.API.SHIFT_DURATION);
+    
+            if (json.status !== 'success') {
+                throw new Error('API shift duration error');
+            }
+    
+            this.cache.shiftDuration = json.data;
+            return json.data;
+    
+        } catch (err) {
+            console.error('❌ loadShiftDuration error:', err);
+            return {};
+        }
+    },    
+        
 
     /**
      * Parse CSV text menjadi array of objects
@@ -100,6 +134,8 @@ window.DataService = {
             throw error;
         }
     },
+
+
     
 
     /**
@@ -183,6 +219,27 @@ window.DataService = {
         
         return result;
     },
+
+    async getTotalJamPerBulanByShift(shiftTable) {
+        const shiftDuration = await this.loadShiftDuration();
+        const result = {};
+    
+        shiftTable.forEach(row => {
+            const bulan = row['Bulan'];
+            if (!result[bulan]) result[bulan] = {};
+    
+            for (let day = 1; day <= 31; day++) {
+                const kode = row[day];
+                if (!kode || kode === '#') continue;
+    
+                const jam = shiftDuration[kode] || 0;
+                result[bulan][kode] = (result[bulan][kode] || 0) + jam;
+            }
+        });
+    
+        return result;
+    },
+    
 
     /**
      * ✅ UPDATED: Get pejabat by ruangan with better error handling

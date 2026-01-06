@@ -28,6 +28,24 @@ const UIController = {
       }
     },
 
+    async hitungTotalJamRow(row, daysInMonth, tglDari, tglSampai) {
+      const shiftDuration = await DataService.loadShiftDuration()
+      let totalJam = 0
+    
+      for (let day = 1; day <= daysInMonth; day++) {
+        if (day < tglDari || day > tglSampai) continue
+    
+        const kodeShift = row[day.toString()]
+        if (!kodeShift || kodeShift === '#' || kodeShift.toUpperCase() === 'L') continue
+    
+        const durasi = shiftDuration[kodeShift] || 0
+        totalJam += durasi
+      }
+    
+      return totalJam
+    },
+    
+
   /**
    * Setup sidebar toggle for mobile
    */
@@ -122,7 +140,7 @@ const UIController = {
   /**
    * Apply filters dan render tabel
    */
-  applyFilters() {
+  async applyFilters() {
     const ruangan = document.getElementById("filterRuangan").value
     const bulan = document.getElementById("filterBulan").value
     const nama = document.getElementById("filterNama").value
@@ -146,19 +164,21 @@ const UIController = {
     this.currentData = DataService.transformShiftData(DataService.cache.jadwalShift, filters)
 
     // Render tabel
-    this.renderTable()
+    await this.renderTable()
   },
 
   /**
    * Render tabel jadwal
    */
-  renderTable() {
+  async renderTable() {
     const container = document.getElementById("tableContainer")
 
     if (this.currentData.length === 0) {
       container.innerHTML = '<div class="no-data">Tidak ada data yang sesuai dengan filter</div>'
       return
     }
+
+    const shiftDurationMap = await DataService.loadShiftDuration()
 
     // Get bulan untuk menentukan jumlah hari
     const bulan = this.currentData[0]["Bulan"]
@@ -183,6 +203,7 @@ const UIController = {
     // Kolom total
     html += "<th>Total Jadwal</th>"
     html += "<th>Total Libur</th>"
+    html += "<th>Total Jam Kerja</th>"
     html += "</tr></thead>"
 
     // Body
@@ -190,6 +211,7 @@ const UIController = {
     this.currentData.forEach((row) => {
       let totalJadwal = 0
       let totalLibur = 0
+      let totalJamKerja = 0
 
       html += "<tr>"
       html += `<td class="sticky-col">${row["Nama"]}</td>`
@@ -197,28 +219,36 @@ const UIController = {
       html += `<td>${row["Bulan"]}</td>`
 
       // Data shift per tanggal
+
       for (let day = 1; day <= daysInMonth; day++) {
         const shift = row[day.toString()] || ""
         const isInRange = day >= tglDari && day <= tglSampai
         const displayShift = isInRange ? shift : ""
         const bgColor = displayShift ? this.getShiftColor(displayShift) : ""
-
+      
         html += `<td style="background-color: ${bgColor};">${displayShift}</td>`
-
-        // Count totals
+      
         if (isInRange && displayShift) {
-          const firstChar = displayShift.charAt(0).toUpperCase()
-          if (firstChar === "L" || firstChar === "#" || displayShift.toUpperCase() === "OFF") {
+          const kode = displayShift.toUpperCase()
+      
+          if (kode === "#" || kode.startsWith("L") || kode === "OFF") {
             totalLibur++
-          } else if (firstChar !== "C") {
+          }
+          else if (kode.startsWith("C")) {
+            // cuti → tidak dihitung jam
+          }
+          else {
             totalJadwal++
+            totalJamKerja += shiftDurationMap[kode] || 0
           }
         }
       }
+      
 
       // Total columns
       html += `<td style="background-color: var(--grey-light); font-weight: 600;">${totalJadwal}</td>`
       html += `<td style="background-color: var(--grey-light); font-weight: 600;">${totalLibur}</td>`
+      html += `<td style="background-color: var(--primary-light); font-weight: 700;">${totalJamKerja} Jam</td>`
       html += "</tr>"
     })
     html += "</tbody>"

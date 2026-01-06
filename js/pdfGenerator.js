@@ -14,6 +14,12 @@ const PDFGenerator = {
             
             console.log('Selected approvals:', selectedApprovals);
             console.log('Pejabat Data:', pejabatData);
+            // ✅ PASTIKAN shift duration sudah ter-load
+            if (!DataService.cache.shiftDuration) {
+                console.log('📡 Loading shift duration for PDF...');
+                await DataService.loadShiftDuration();
+            }
+
 
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({
@@ -194,6 +200,7 @@ const PDFGenerator = {
 
         columns.push({ header: 'Jadwal', dataKey: 'totalJadwal' });
         columns.push({ header: 'Libur', dataKey: 'totalLibur' });
+        columns.push({ header: 'Jam Kerja', dataKey: 'totalJamKerja' });
 
         const tableData = data.map(row => {
             const rowData = {
@@ -203,6 +210,7 @@ const PDFGenerator = {
 
             let totalJadwal = 0;
             let totalLibur = 0;
+            let totalJamKerja = 0;
 
             for (let day = 1; day <= daysInMonth; day++) {
                 const isInRange = day >= tglDari && day <= tglSampai;
@@ -210,17 +218,26 @@ const PDFGenerator = {
                 rowData[`day_${day}`] = shift;
 
                 if (isInRange && shift) {
-                    const firstChar = shift.charAt(0).toUpperCase();
-                    if (firstChar === 'L' || firstChar === '#' || shift.toUpperCase() === 'OFF') {
+                    const shiftCode = shift.toString().trim().toUpperCase();
+
+                    if (shiftCode === 'L' || shiftCode === '#' || shiftCode === 'OFF') {
                         totalLibur++;
-                    } else if (firstChar !== 'C') {
-                        totalJadwal++;
                     }
-                }
+                    else if (!shiftCode.startsWith('C')) {
+                        totalJadwal++;
+
+                        // ✅ PAKAI SHIFT CODE PENUH (P1, P2, S5, dst)
+                        const durasi = DataService.cache.shiftDuration?.[shiftCode] || 0;
+                        totalJamKerja += durasi;
+                    }
+
+                }                
+                
             }
 
             rowData.totalJadwal = totalJadwal;
             rowData.totalLibur = totalLibur;
+            rowData.totalJamKerja = totalJamKerja;
 
             return rowData;
         });
@@ -246,20 +263,33 @@ const PDFGenerator = {
             columnStyles: {
                 0: { cellWidth: 30, fontStyle: 'bold', halign: 'left' },
                 1: { cellWidth: 22, fontSize: 5 },
+                [columns.length - 3]: { cellWidth: 12, halign: 'center', fontStyle: 'bold', fontSize: 6 },
                 [columns.length - 2]: { cellWidth: 12, halign: 'center', fontStyle: 'bold', fontSize: 6 },
-                [columns.length - 1]: { cellWidth: 12, halign: 'center', fontStyle: 'bold', fontSize: 6 }
+                [columns.length - 1]: { cellWidth: 14, halign: 'center', fontStyle: 'bold', fontSize: 6 }
             },
+
             didParseCell: (data) => {
-                if (data.section === 'body' && data.column.index > 1 && data.column.index < columns.length - 2) {
+                const isShiftColumn =
+                    data.column.index > 1 &&
+                    data.column.index < columns.length - 2;
+            
+                if (data.section === 'body' && isShiftColumn) {
                     const cellValue = data.cell.raw;
-                    if (cellValue) {
+            
+                    if (typeof cellValue === 'string' && cellValue.trim() !== '') {
                         const color = this.getShiftColorRGB(cellValue);
                         data.cell.styles.fillColor = color;
                     }
+            
                     data.cell.styles.fontSize = 5;
                 }
-                
-                if (data.section === 'body' && (data.column.index === columns.length - 2 || data.column.index === columns.length - 1)) {
+            
+                // Kolom total
+                if (
+                    data.section === 'body' &&
+                    (data.column.index === columns.length - 2 ||
+                     data.column.index === columns.length - 1)
+                ) {
                     data.cell.styles.fillColor = [245, 245, 245];
                     data.cell.styles.fontStyle = 'bold';
                 }
@@ -402,15 +432,20 @@ const PDFGenerator = {
      * Get hex color untuk shift code
      */
     getShiftColorHex(shiftCode) {
+        // ✅ jika bukan string, langsung putih
+        if (!shiftCode || typeof shiftCode !== 'string') {
+            return '#FFFFFF';
+        }
+    
         if (CONFIG.SHIFT_COLORS[shiftCode]) {
             return CONFIG.SHIFT_COLORS[shiftCode];
         }
-
+    
         const prefix = shiftCode.charAt(0);
         if (CONFIG.SHIFT_COLORS[prefix]) {
             return CONFIG.SHIFT_COLORS[prefix];
         }
-
+    
         return '#FFFFFF';
     },
 
